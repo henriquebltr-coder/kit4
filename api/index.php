@@ -6,7 +6,7 @@ function obter_ip_real() {
         if (array_key_exists($key, $_SERVER) === true){
             foreach (explode(',', $_SERVER[$key]) as $ip){
                 $ip = trim($ip); 
-                if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false){
+                if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_NO_RES_RANGE) !== false){
                     return $ip;
                 }
             }
@@ -31,7 +31,6 @@ if (isset($_SERVER["HTTP_CF_IPCOUNTRY"]) && $_SERVER["HTTP_CF_IPCOUNTRY"] === 'U
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 2); // Timeout de 2s para não travar o site
         $resposta = curl_exec($ch);
-        curl_close($ch);
         
         if ($resposta) {
             $dados = json_decode($resposta, true);
@@ -68,7 +67,7 @@ if ($is_us && $is_mobile && !$is_bot && $has_utms && $has_specific_param) {
     exit;
 } else {
     // Tráfego desqualificado (bots, desktop, fora dos EUA ou sem os parâmetros corretos)
-    header("Location: https://www.amazon.com/DPLASKA-Perfume-Travel-Refillable-Bottle/dp/B0H4H2LFVW/ref=sr_1_1_sspa?crid=1QLIOBOOIX5ZP&dib=eyJ2IjoiMSJ9.74OB6HxEt1W7wjuBTiEjeniaXYWnhW_wsNfMDBimEW_GdJLhpPcV3LGi4ukl4JexHQJEKoqNXhb7GXD1r-aKQ82T3nTeQlpAWKR-m4POWUmsJpzbsnjUAhscIOotBW4pt4vhNSKG_88jxytoAYDUFHkr5WoN1-589Z4KTpZJuoUPYF_cIOlD8_RPEbfS1SFm6rGzweLS269J8lKpbjIctbPoCOSKUCDyVLStHXa5ZM1ujZ4oFStK6UM01ebuv0Mj2mZU_8ihLCZvoO1B2T9Nub1bLFT3AEg21Bbx3mRnVSc.SYk6HUkLfVJ8tPcAliOCHxrw9QY8Kg3qCL0SYtyd9yU&dib_tag=se&keywords=cologne%2Bbottle&qid=1791404224&sprefix=cologne%2Bbott%2Caps%2C275&sr=8-1-spons&sp_csd=d2lkZ2V0TmFtZT1zcF9hdGY&th=1");
+    header("Location: https://www.amazon.com/DPLASKA-Perfume-Travel-Refillable-Bottle/dp/B0H4H2LFVW/ref=sr_1_1_sspa?crid=1QLIOBOOIX5ZP&dib=eyJ2IjoiMSJ9.74OB6HxEt1W7wjuBTiEjeniaXYWnhW_wsNfMDBimEW_GdJLhpPcV3LGi4ukl4JexHQJEKoqNXhbG7XD1r-aKQ82T3nTeQlpAWKR-m4POWUmsJpzbsnjUAhscIOotBW4pt4vhNSKG_88jxytoAYDUFHkr5WoN1-589Z4KTpZJuoUPYF_cIOlD8_RPEbfS1SFm6rGzweLS269J8lKpbjIctbPoCOSKUCDyVLStHXa5ZM1ujZ4oFStK6UM01ebuv0Mj2mZU_8ihLCZvoO1B2T9Nub1bLFT3AEg21Bbx3mRnVSc.SYk6HUkLfVJ8tPcAliOCHxrw9QY8Kg3qCL0SYtyd9yU&dib_tag=se&keywords=cologne%2Bbottle&qid=1791404224&sprefix=cologne%2Bbott%2Caps%2C275&sr=8-1-spons&sp_csd=d2lkZ2V0TmFtZT1zcF9hdGY&th=1");
     exit;
 }
 ?>
