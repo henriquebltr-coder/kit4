@@ -22,6 +22,25 @@ const bundleVariants = {
 const remote = file => `https://penroseskin.com/cdn/shop/files/${file}`;
 let slide = 2, selected = 1, choice = [0, 1, 2], pickerIndex = 0;
 const hero = document.querySelector('#hero'), count = document.querySelector('#count');
+const deliveryDate = document.querySelector('#deliveryDate');
+function updateDeliveryDate() {
+  deliveryDate.textContent = new Intl.DateTimeFormat('en-US', {
+    weekday: 'long', month: 'short', day: 'numeric'
+  }).format(new Date());
+}
+function scheduleDeliveryDateUpdate() {
+  const nextMidnight = new Date();
+  nextMidnight.setHours(24, 0, 0, 0);
+  setTimeout(() => {
+    updateDeliveryDate();
+    scheduleDeliveryDateUpdate();
+  }, nextMidnight.getTime() - Date.now());
+}
+updateDeliveryDate();
+scheduleDeliveryDateUpdate();
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) updateDeliveryDate();
+});
 function setSlide(n) {
   slide = (n + slides.length) % slides.length;
   hero.src = remote(slides[slide]);
