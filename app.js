@@ -19,6 +19,31 @@ const bundleVariants = {
   2: '68029485842656',
   3: '68029490659552'
 };
+// Keep campaign attribution through the cart-to-checkout navigation.
+const attributionStorageKey = 'penrose-attribution-v1';
+const attributionPattern = /^(utm_[a-z0-9_]+|src|sck|xcod|subid|subid2|fbclid|gclid|gbraid|wbraid|ttclid|twclid|msclkid|campaign_id|adset_id|ad_id)$/i;
+function readSavedAttribution() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(attributionStorageKey) || 'null');
+    if (saved && saved.expiresAt > Date.now() && saved.params && typeof saved.params === 'object') return saved.params;
+  } catch (_) {}
+  return {};
+}
+function saveAttributionFromUrl() {
+  const params = readSavedAttribution();
+  let changed = false;
+  new URLSearchParams(window.location.search).forEach((value, key) => {
+    if (attributionPattern.test(key) && value) {
+      params[key] = value;
+      changed = true;
+    }
+  });
+  if (!changed) return;
+  try {
+    localStorage.setItem(attributionStorageKey, JSON.stringify({ params, expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000 }));
+  } catch (_) {}
+}
+saveAttributionFromUrl();
 const remote = file => `https://penroseskin.com/cdn/shop/files/${file}`;
 let slide = 2, selected = 1, choice = [0, 1, 2], pickerIndex = 0;
 const hero = document.querySelector('#hero'), count = document.querySelector('#count');
@@ -101,7 +126,12 @@ function checkoutUrl() {
   bytes.forEach(byte => binary += String.fromCharCode(byte));
   const encodedProperties = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
   const query = new URLSearchParams({ properties: encodedProperties, skip_shop_pay: 'true' });
-  return `https://31amj0-yw.myshopify.com/cart/${bundleVariants[selected]}:1?${query.toString()}`;
+  const checkout = new URL(`https://31amj0-yw.myshopify.com/cart/${bundleVariants[selected]}:1`);
+  query.forEach((value, key) => checkout.searchParams.set(key, value));
+  Object.entries(readSavedAttribution()).forEach(([key, value]) => {
+    if (attributionPattern.test(key) && value) checkout.searchParams.set(key, value);
+  });
+  return checkout.toString();
 }
 function closeCartDrawer() {
   const drawer = document.querySelector('#cartDrawer');
