@@ -133,6 +133,14 @@ function checkoutUrl() {
   });
   return checkout.toString();
 }
+function preserveCurrentSearchParams(destination) {
+  const url = new URL(destination, window.location.href);
+  const destinationKeys = new Set(url.searchParams.keys());
+  new URLSearchParams(window.location.search).forEach((value, key) => {
+    if (!destinationKeys.has(key)) url.searchParams.append(key, value);
+  });
+  return url.toString();
+}
 function closeCartDrawer() {
   const drawer = document.querySelector('#cartDrawer');
   drawer.classList.remove('open');
@@ -160,7 +168,7 @@ function openCartDrawer() {
   document.body.classList.add('drawer-open');
   drawer.onclick = event => {
     if (event.target === drawer || event.target.closest('.cart-close')) closeCartDrawer();
-    if (event.target.closest('.cart-checkout')) window.location.assign(checkoutUrl());
+    if (event.target.closest('.cart-checkout')) window.location.href = preserveCurrentSearchParams(checkoutUrl());
   };
 }
 function addToCart() {
