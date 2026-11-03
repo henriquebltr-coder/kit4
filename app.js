@@ -44,6 +44,33 @@ function saveAttributionFromUrl() {
   } catch (_) {}
 }
 saveAttributionFromUrl();
+const countdownParts = {
+  hours: document.querySelector('#countdownHours'),
+  minutes: document.querySelector('#countdownMinutes'),
+  seconds: document.querySelector('#countdownSeconds')
+};
+function nextLocalMidnight(from = new Date()) {
+  const midnight = new Date(from);
+  midnight.setHours(24, 0, 0, 0);
+  return midnight;
+}
+let countdownDeadline = nextLocalMidnight();
+function updateCountdown() {
+  const now = new Date();
+  let secondsLeft = Math.max(0, Math.ceil((countdownDeadline.getTime() - now.getTime()) / 1000));
+  if (secondsLeft === 0) {
+    countdownDeadline = nextLocalMidnight(now);
+    secondsLeft = Math.max(0, Math.ceil((countdownDeadline.getTime() - now.getTime()) / 1000));
+  }
+  const hours = Math.floor(secondsLeft / 3600);
+  const minutes = Math.floor((secondsLeft % 3600) / 60);
+  const seconds = secondsLeft % 60;
+  countdownParts.hours.textContent = String(hours).padStart(2, '0');
+  countdownParts.minutes.textContent = String(minutes).padStart(2, '0');
+  countdownParts.seconds.textContent = String(seconds).padStart(2, '0');
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
 const remote = file => `https://penroseskin.com/cdn/shop/files/${file}`;
 let slide = 2, selected = 1, choice = [0, 1, 2], pickerIndex = 0;
 const hero = document.querySelector('#hero'), count = document.querySelector('#count');
