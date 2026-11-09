@@ -16,13 +16,13 @@ const prices = [0, 27, 54, 81];
 // Shopify variant IDs and storefront domains for each bundle tier.
 const bundleVariants = {
   1: '50125586104475',
-  2: '68029485842656',
-  3: '68029490659552'
+  2: '50125685358747',
+  3: '50125692207259'
 };
 const bundleStorefronts = {
   1: 'get.amberedit.com',
-  2: '31amj0-yw.myshopify.com',
-  3: '31amj0-yw.myshopify.com'
+  2: 'get.amberedit.com',
+  3: 'get.amberedit.com'
 };
 // Keep campaign attribution through the cart-to-checkout navigation.
 const attributionStorageKey = 'penrose-attribution-v1';
