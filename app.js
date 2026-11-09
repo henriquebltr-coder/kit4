@@ -13,11 +13,16 @@ const scents = [
 ];
 const slides = ['Crimson01.png?v=1768426979','Crimson02.png?v=1771527646','Crimson03.png?v=1771527646','Crimson04.2.png?v=1768426978','Crimson05.png?v=1768426978','Crimson06.2.png?v=1768426978'];
 const prices = [0, 27, 54, 81];
-// Shopify variant IDs for the 1-, 2- and 3-jar bundle products.
+// Shopify variant IDs and storefront domains for each bundle tier.
 const bundleVariants = {
-  1: '68029482860768',
+  1: '50125586104475',
   2: '68029485842656',
   3: '68029490659552'
+};
+const bundleStorefronts = {
+  1: 'get.amberedit.com',
+  2: '31amj0-yw.myshopify.com',
+  3: '31amj0-yw.myshopify.com'
 };
 // Keep campaign attribution through the cart-to-checkout navigation.
 const attributionStorageKey = 'penrose-attribution-v1';
@@ -153,7 +158,7 @@ function checkoutUrl() {
   bytes.forEach(byte => binary += String.fromCharCode(byte));
   const encodedProperties = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
   const query = new URLSearchParams({ properties: encodedProperties, skip_shop_pay: 'true' });
-  const checkout = new URL(`https://31amj0-yw.myshopify.com/cart/${bundleVariants[selected]}:1`);
+  const checkout = new URL(`https://${bundleStorefronts[selected]}/cart/${bundleVariants[selected]}:1`);
   query.forEach((value, key) => checkout.searchParams.set(key, value));
   Object.entries(readSavedAttribution()).forEach(([key, value]) => {
     if (attributionPattern.test(key) && value) checkout.searchParams.set(key, value);
