@@ -20,9 +20,9 @@ const bundleVariants = {
   3: '68308843135196'
 };
 const bundleStorefronts = {
-  1: 'get.amberedit.com',
-  2: 'get.amberedit.com',
-  3: 'get.amberedit.com'
+  1: 'morrowessentials.com',
+  2: 'morrowessentials.com',
+  3: 'morrowessentials.com'
 };
 // Keep campaign attribution through the cart-to-checkout navigation.
 const attributionStorageKey = 'penrose-attribution-v1';
