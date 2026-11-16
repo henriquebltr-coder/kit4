@@ -54,19 +54,46 @@ const countdownParts = {
   minutes: document.querySelector('#countdownMinutes'),
   seconds: document.querySelector('#countdownSeconds')
 };
-function nextLocalMidnight(from = new Date()) {
-  const midnight = new Date(from);
-  midnight.setHours(24, 0, 0, 0);
-  return midnight;
+const usTimeZones = new Set([
+  'America/New_York', 'America/Detroit', 'America/Indiana/Indianapolis',
+  'America/Indiana/Marengo', 'America/Indiana/Petersburg', 'America/Indiana/Tell_City',
+  'America/Indiana/Vevay', 'America/Indiana/Vincennes', 'America/Indiana/Winamac',
+  'America/Indiana/Knox', 'America/Kentucky/Louisville', 'America/Kentucky/Monticello',
+  'America/Chicago', 'America/Menominee', 'America/North_Dakota/Beulah',
+  'America/North_Dakota/Center', 'America/North_Dakota/New_Salem',
+  'America/Denver', 'America/Boise', 'America/Phoenix', 'America/Los_Angeles',
+  'America/Anchorage', 'America/Adak', 'America/Juneau', 'America/Metlakatla',
+  'America/Nome', 'America/Sitka', 'America/Yakutat', 'Pacific/Honolulu'
+]);
+const detectedTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+const countdownTimeZone = usTimeZones.has(detectedTimeZone) ? detectedTimeZone : 'America/New_York';
+const usClockFormatter = new Intl.DateTimeFormat('en-US', {
+  timeZone: countdownTimeZone,
+  year: 'numeric', month: 'numeric', day: 'numeric',
+  hour: 'numeric', minute: 'numeric', second: 'numeric', hourCycle: 'h23'
+});
+function usClockParts(date) {
+  const values = {};
+  usClockFormatter.formatToParts(date).forEach(part => {
+    if (part.type !== 'literal') values[part.type] = Number(part.value);
+  });
+  return values;
 }
-let countdownDeadline = nextLocalMidnight();
+function usTimeZoneOffset(date) {
+  const parts = usClockParts(date);
+  const wholeSecond = Math.floor(date.getTime() / 1000) * 1000;
+  return Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second) - wholeSecond;
+}
+function nextUsMidnight(from = new Date()) {
+  const parts = usClockParts(from);
+  const nextMidnightAsUtc = Date.UTC(parts.year, parts.month - 1, parts.day + 1, 0, 0, 0);
+  return new Date(nextMidnightAsUtc - usTimeZoneOffset(new Date(nextMidnightAsUtc)));
+}
+let countdownDeadline = nextUsMidnight();
 function updateCountdown() {
   const now = new Date();
-  let secondsLeft = Math.max(0, Math.ceil((countdownDeadline.getTime() - now.getTime()) / 1000));
-  if (secondsLeft === 0) {
-    countdownDeadline = nextLocalMidnight(now);
-    secondsLeft = Math.max(0, Math.ceil((countdownDeadline.getTime() - now.getTime()) / 1000));
-  }
+  while (countdownDeadline.getTime() <= now.getTime()) countdownDeadline = nextUsMidnight(now);
+  const secondsLeft = Math.max(0, Math.ceil((countdownDeadline.getTime() - now.getTime()) / 1000));
   const hours = Math.floor(secondsLeft / 3600);
   const minutes = Math.floor((secondsLeft % 3600) / 60);
   const seconds = secondsLeft % 60;
@@ -76,6 +103,7 @@ function updateCountdown() {
 }
 updateCountdown();
 setInterval(updateCountdown, 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) updateCountdown(); });
 const remote = file => `https://penroseskin.com/cdn/shop/files/${file}`;
 let slide = 2, selected = 1, choice = [0, 1, 2], pickerIndex = 0;
 const hero = document.querySelector('#hero'), count = document.querySelector('#count');
