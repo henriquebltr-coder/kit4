@@ -15,9 +15,9 @@ const slides = ['Crimson01.png?v=1768426979','Crimson02.png?v=1771527646','Crims
 const prices = [0, 27, 54, 81];
 // Shopify variant IDs and storefront domains for each bundle tier.
 const bundleVariants = {
-  1: '50125586104475',
-  2: '50125685358747',
-  3: '50125692207259'
+  1: '68308841103580',
+  2: '68308841824476',
+  3: '68308843135196'
 };
 const bundleStorefronts = {
   1: 'get.amberedit.com',
