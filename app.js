@@ -14,7 +14,17 @@ const scents = [
 const slides = ['Crimson01.png?v=1768426979','Crimson02.png?v=1771527646','Crimson03.png?v=1771527646','Crimson04.2.png?v=1768426978','Crimson05.png?v=1768426978','Crimson06.2.png?v=1768426978'];
 const prices = [0, 35, 71, 105];
 // Shopify variant IDs and storefront domains for each bundle tier.
-// Store campaign attribution while the visitor browses the landing page.
+const bundleVariants = {
+  1: '68308841103580',
+  2: '68308841824476',
+  3: '68308843135196'
+};
+const bundleStorefronts = {
+  1: 'morrowessentials.com',
+  2: 'morrowessentials.com',
+  3: 'morrowessentials.com'
+};
+// Keep campaign attribution through the cart-to-checkout navigation.
 const attributionStorageKey = 'penrose-attribution-v1';
 const attributionPattern = /^(utm_[a-z0-9_]+|src|sck|xcod|subid|subid2|fbclid|gclid|gbraid|wbraid|ttclid|twclid|msclkid|campaign_id|adset_id|ad_id)$/i;
 function readSavedAttribution() {
@@ -166,6 +176,31 @@ function openPicker(index) {
     if (event.target.closest('.pickdone')) { modal.remove(); render(); }
   };
 }
+function checkoutUrl() {
+  const properties = {};
+  for (let i = 0; i < selected; i++) properties[`Jar ${i + 1} scent`] = scents[choice[i]][0];
+  if (selected === 2) properties['Bundle gift'] = '1 free gift';
+  if (selected === 3) properties['Bundle gifts'] = '3 free gifts';
+  const bytes = new TextEncoder().encode(JSON.stringify(properties));
+  let binary = '';
+  bytes.forEach(byte => binary += String.fromCharCode(byte));
+  const encodedProperties = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  const query = new URLSearchParams({ properties: encodedProperties, skip_shop_pay: 'true' });
+  const checkout = new URL(`https://${bundleStorefronts[selected]}/cart/${bundleVariants[selected]}:1`);
+  query.forEach((value, key) => checkout.searchParams.set(key, value));
+  Object.entries(readSavedAttribution()).forEach(([key, value]) => {
+    if (attributionPattern.test(key) && value) checkout.searchParams.set(key, value);
+  });
+  return checkout.toString();
+}
+function preserveCurrentSearchParams(destination) {
+  const url = new URL(destination, window.location.href);
+  const destinationKeys = new Set(url.searchParams.keys());
+  new URLSearchParams(window.location.search).forEach((value, key) => {
+    if (!destinationKeys.has(key)) url.searchParams.append(key, value);
+  });
+  return url.toString();
+}
 function closeCartDrawer() {
   const drawer = document.querySelector('#cartDrawer');
   drawer.classList.remove('open');
@@ -187,12 +222,13 @@ function openCartDrawer() {
     giftCount >= 2 ? `<div class="cart-line cart-gift"><img src="assets/gifts/mystery.png" alt=""><div class="cart-line-copy"><span class="gift-tag">✿ GIFT</span><b>Mystery Gift</b><small>Free Mystery Gift applied</small></div><span class="cart-line-price"><s>$19.00</s><b>FREE</b></span></div>` : '',
     giftCount >= 1 ? `<div class="cart-line cart-gift"><img src="assets/gifts/credit.png" alt=""><div class="cart-line-copy"><span class="gift-tag">✿ GIFT</span><b>$15 Store Credit</b><small>Free Gift Card applied</small></div><span class="cart-line-price"><s>$11.27</s><b>FREE</b></span></div>` : ''
   ].join('');
-  drawer.innerHTML = `<section class="cart-panel" role="dialog" aria-modal="true" aria-label="Your cart"><header class="cart-head"><h2>♧ &nbsp; Your cart <span>${selected + giftCount}</span></h2><button class="cart-close" aria-label="Close cart">×</button></header><div class="cart-promise">Your cart summary</div><div class="shipping-progress ${shipping === 0 ? 'unlocked' : ''}"><b>${shipping === 0 ? '✓ &nbsp; FREE SHIPPING UNLOCKED' : `SHIPPING IS $${shipping.toFixed(2)}`}</b><div><i style="width:${progress}%"></i></div></div><div class="cart-lines">${giftRows}<div class="cart-line cart-product"><img src="assets/bundle-image-clean.png" alt=""><div class="cart-line-copy"><b>${productTitle}</b><small>${selected > 1 ? `${selected} jars · ` : ''}${scentNames.join(' · ')}</small><span class="cart-quantity"><button aria-label="Decrease quantity" disabled>−</button><b>1</b><button aria-label="Increase quantity" disabled>＋</button></span></div><button class="cart-remove" aria-label="Remove item">×</button><span class="cart-line-price"><s>$${(selected * 49).toFixed(2)}</s><b>$${price.toFixed(2)}</b></span></div></div><div class="cart-summary"><h3>Order summary</h3><div><span>Original price</span><b>$${(original + giftsValue).toFixed(2)}</b></div><div class="discount"><span>Discount</span><b>−$${(original - price).toFixed(2)}</b></div>${giftCount ? `<div class="discount"><span>♧ &nbsp;Free gifts (${giftCount})</span><b>−$${giftsValue.toFixed(2)}</b></div>` : ''}<div><span>Shipping</span><b class="${shipping === 0 ? 'green' : ''}">${shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}</b></div><div class="cart-final"><span>Final price</span><b>$${total.toFixed(2)}</b></div><div class="cart-total"><span>Total <small>(${selected + giftCount} items)</small></span><b>$${total.toFixed(2)}</b></div></div></section>`;
+  drawer.innerHTML = `<section class="cart-panel" role="dialog" aria-modal="true" aria-label="Your cart"><header class="cart-head"><h2>♧ &nbsp; Your cart <span>${selected + giftCount}</span></h2><button class="cart-close" aria-label="Close cart">×</button></header><div class="cart-promise">● &nbsp; Checkout now to keep your order</div><div class="shipping-progress ${shipping === 0 ? 'unlocked' : ''}"><b>${shipping === 0 ? '✓ &nbsp; FREE SHIPPING UNLOCKED' : `SHIPPING IS $${shipping.toFixed(2)}`}</b><div><i style="width:${progress}%"></i></div></div><div class="cart-lines">${giftRows}<div class="cart-line cart-product"><img src="assets/bundle-image-clean.png" alt=""><div class="cart-line-copy"><b>${productTitle}</b><small>${selected > 1 ? `${selected} jars · ` : ''}${scentNames.join(' · ')}</small><span class="cart-quantity"><button aria-label="Decrease quantity" disabled>−</button><b>1</b><button aria-label="Increase quantity" disabled>＋</button></span></div><button class="cart-remove" aria-label="Remove item">×</button><span class="cart-line-price"><s>$${(selected * 49).toFixed(2)}</s><b>$${price.toFixed(2)}</b></span></div></div><div class="cart-summary"><h3>Order summary</h3><div><span>Original price</span><b>$${(original + giftsValue).toFixed(2)}</b></div><div class="discount"><span>Discount</span><b>−$${(original - price).toFixed(2)}</b></div>${giftCount ? `<div class="discount"><span>♧ &nbsp;Free gifts (${giftCount})</span><b>−$${giftsValue.toFixed(2)}</b></div>` : ''}<div><span>Shipping</span><b class="${shipping === 0 ? 'green' : ''}">${shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}</b></div><div class="cart-final"><span>Final price</span><b>$${total.toFixed(2)}</b></div><div class="cart-total"><span>Total <small>(${selected + giftCount} items)</small></span><b>$${total.toFixed(2)}</b></div></div><div class="cart-checkout-wrap"><button class="cart-checkout">♙ &nbsp; CHECKOUT SECURELY<small>♧ &nbsp;30-Day Money-Back Guarantee</small></button><div class="payment-marks">VISA　●●　MC　 AMEX　 DISCOVER　 Pay　 G Pay</div></div></section>`;
   drawer.classList.add('open');
   drawer.setAttribute('aria-hidden', 'false');
   document.body.classList.add('drawer-open');
   drawer.onclick = event => {
     if (event.target === drawer || event.target.closest('.cart-close')) closeCartDrawer();
+    if (event.target.closest('.cart-checkout')) window.location.href = preserveCurrentSearchParams(checkoutUrl());
   };
 }
 function addToCart() {
