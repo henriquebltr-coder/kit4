@@ -154,7 +154,7 @@ function render() {
   document.querySelector('#subtotal').textContent = `$${price.toFixed(2)}`;
   document.querySelector('#was').textContent = `$${was.toFixed(2)}`;
   document.querySelector('#saving').textContent = `$${saving.toFixed(2)}`;
-  const shipping = selected === 3 ? 0 : 4.90;
+  const shipping = 0;
   document.querySelector('#shippingDisplay').textContent = shipping ? `Shipping: $${shipping.toFixed(2)}` : 'FREE SHIPPING UNLOCKED';
   document.querySelector('#shippingDisplay').classList.toggle('free', shipping === 0);
   document.querySelector('.delivery small').textContent = shipping ? `SHIPPING: $${shipping.toFixed(2)}` : 'FREE SHIPPING UNLOCKED ON THIS ORDER';
@@ -213,7 +213,7 @@ function openCartDrawer() {
   const price = prices[selected];
   const giftCount = selected === 3 ? 2 : selected === 2 ? 1 : 0;
   const giftsValue = selected === 3 ? 30.27 : selected === 2 ? 11.27 : 0;
-  const shipping = selected === 3 ? 0 : 4.90;
+  const shipping = 0;
   const total = price + shipping;
   const scentNames = choice.slice(0, selected).map(index => scents[index][0]);
   const productTitle = scentNames[0] || 'Body Butter Bundle';
