@@ -12,7 +12,7 @@ const scents = [
   ['Noir Amber', 'Christian Clive Blonde Amber', 'NEW SCENT']
 ];
 const slides = ['Crimson01.png?v=1768426979','Crimson02.png?v=1771527646','Crimson03.png?v=1771527646','Crimson04.2.png?v=1768426978','Crimson05.png?v=1768426978','Crimson06.2.png?v=1768426978'];
-const prices = [0, 35, 71, 105];
+const prices = [0, 27, 54, 81];
 // Shopify variant IDs and storefront domains for each bundle tier.
 const bundleVariants = {
   1: '68308841103580',
